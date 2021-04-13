@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 from selenium.webdriver import ActionChains
 
 url = "https://user.qzone.qq.com/649953543/"
-# url = "https://user.qzone.qq.com/1900241882/"
 # url = "http://httpbin.org/ip"
 chrome_driver = "C:/Users/64995/AppData/Local/Google/Chrome/Application/chromedriver.exe"
 file_url = "C:/Users/64995/OneDrive/桌面/文件/QQ资料.xlsx"
