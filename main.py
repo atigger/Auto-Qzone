@@ -8,17 +8,18 @@ from selenium import webdriver
 from time import sleep
 import requests
 from bs4 import BeautifulSoup
-
 from selenium.webdriver import ActionChains
+import logging
 
 url = "https://user.qzone.qq.com/649953543/"
 # url = "https://user.qzone.qq.com/1900241882/"
 # url = "http://httpbin.org/ip"
-chrome_driver = "C:/Users/64995/AppData/Local/Google/Chrome/Application/chromedriver.exe"
-file_url = "C:/Users/64995/OneDrive/桌面/文件/QQ资料.xlsx"
+chrome_driver = "C:/Program Files/Google/Chrome/Application/chromedriver.exe"
+file_url = "D:/文件/QQ资料.xlsx"
 
 qq_ok = 0
 qq_err = 0
+err_qq = []
 
 
 def load_file():
@@ -44,20 +45,10 @@ def load_file():
 
 def login(qq, pwd):
     chromeOptions = webdriver.ChromeOptions()
-    # ip_add, port = GetIPProxy().getipproxy()
-    # # 设置代理
-    # random1 = random.randint(0, 10)
-    # if random1 < 10:
-    #     ip_add1 = ip_add[random1]
-    #     port = port[random1]
-    #     chromeOptions.add_argument("--proxy-server=" + ip_add1 + ":" + port)
-    #     print("当前代理IP:" + ip_add1 + ":" + port)
-    # else:
-    #     print("当前不使用代理")
-
     driver = webdriver.Chrome(executable_path=chrome_driver, options=chromeOptions)
     driver.delete_all_cookies()
     # 设置浏览器窗口的位置和大小
+    # driver.minimize_window()
     driver.set_window_position(20, 40)
     driver.set_window_size(1100, 700)
     # 打开一个页面（QQ空间登录页）
@@ -73,12 +64,19 @@ def login(qq, pwd):
     sleep(1)
     driver.find_element_by_id("login_button").click()
     sleep(3)
+    tag = True
     for i in range(60):
         if login_status(driver):
             sj = random.randint(1, 5)
             sleep(sj)
+            tag = False
             break
         sleep(1)
+    if tag:
+        global err_qq
+        err_qq.append(qq)
+        print("登录失败")
+        logging.info(str(datetime.now()) + "--->登录失败")
     driver.quit()
     # 判断是否进入主页
     # login_success(driver)
@@ -103,6 +101,7 @@ def login_status(driver):
     try:
         a = driver.find_element_by_class_name("link-text")
         print("登录成功")
+        logging.info(str(datetime.now()) + "--->登录成功")
         global qq_ok
         qq_ok += 1
         tag = True
@@ -116,36 +115,7 @@ def login_status(driver):
 def end_program(pro_name):
     os.system('%s%s' % ("taskkill /F /IM ", pro_name))
     print("结束进程:", pro_name)
-
-
-class GetIPProxy:
-
-    def getString(self, html):  # 构建函数获得目标区域的内容
-        soup = BeautifulSoup(html, 'html.parser')  # 使用BeautifulSoup库对源代码解析，返回解析对象
-        results = soup.find_all('td')  # 使用find_all方法精确定位到目标区域
-        return results  # 以列表形式返回目标区域内容
-
-    def getipproxy(self):
-        ip_add = [None] * 10
-        port = [None] * 10
-        url = "https://www.kuaidaili.com/free/intr/"
-        r = requests.get(url)
-        html = r.text
-        j = 0
-        for i in range(10):
-            ip = str(self.getString(html)[j])
-            ip = ip.replace('<td data-title="IP">', "")
-            ip = ip.replace('</td>', "")
-            ip_add[i] = ip
-            port1 = str(self.getString(html)[j + 1])
-            port1 = port1.replace('<td data-title="PORT">', "")
-            port1 = port1.replace('</td>', "")
-            port[i] = port1
-            # print("ip:" + ip_add[i] + " port:" + port1)
-            j = j + 7
-        if r.status_code == 200:
-            print("获取代理IP列表成功")
-        return ip_add, port
+    logging.info(str(datetime.now()) + "--->结束进程:" + str(pro_name))
 
 
 class Tencent():
@@ -171,6 +141,7 @@ class Tencent():
         captcha2 = Image.open('img2.png')
         if captcha1 and captcha2 is not None:
             print("验证码读取完成")
+            logging.info(str(datetime.now()) + "--->验证码读取完成")
         return captcha1, captcha2
 
     def resize_img(self, img):
@@ -255,6 +226,7 @@ class Tencent():
         # 按正向轨迹移动
         # move_by_offset函数是会延续上一步的结束的地方开始移动
         print("正在滑动")
+        logging.info(str(datetime.now()) + "--->正在滑动")
         for i in track:
             ActionChains(self.driver).move_by_offset(xoffset=i, yoffset=0).perform()
             sleep(random.random() / 100)  # 每移动一次随机停顿0-1/100秒之间骗过了极验，通过率很高
@@ -281,14 +253,21 @@ class Tencent():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='qqkj.log', level=logging.INFO)
+    logging.info(str(datetime.now()) + "--->开始运行")
     oldtime = datetime.now()
     qq, pwd = load_file()
     for i in range(len(qq)):
         print("QQ:", qq[i], "密码:", pwd[i])
+        logging.info(str(datetime.now()) + "--->QQ:" + str(qq[i]) + "密码:" + str(pwd[i]))
         login(qq[i], pwd[i])
-
     qq_err = len(qq) - qq_ok
     newtime = datetime.now()
     date1 = newtime - oldtime
     end_program("chromedriver.exe")
-    print("运行完成！成功", qq_ok, "个", "---失败", qq_err, "个", " 共用时", date1.seconds, "秒")
+    print("运行完成！成功", qq_ok, "个---失败", qq_err, "个 共用时", date1.seconds, "秒")
+    logging.info(
+        str(datetime.now()) + "--->运行完成！成功" + str(qq_ok) + "个---失败" + str(qq_err) + "个 共用时" + str(date1.seconds) + "秒")
+    if qq_err > 0:
+        print("失败的QQ号：", err_qq)
+        logging.info(str(datetime.now()) + "--->失败的QQ号：" + str(err_qq))
