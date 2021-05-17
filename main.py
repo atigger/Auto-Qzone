@@ -12,7 +12,6 @@ from selenium.webdriver import ActionChains
 import logging
 
 url = "https://user.qzone.qq.com/649953543/"
-# url = "https://user.qzone.qq.com/1900241882/"
 # url = "http://httpbin.org/ip"
 chrome_driver = "C:/Program Files/Google/Chrome/Application/chromedriver.exe"
 file_url = "D:/文件/QQ资料.xlsx"
